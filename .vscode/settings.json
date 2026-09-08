@@ -1,0 +1,4 @@
+{
+  "chat.tools.terminal.enableAutoApprove": false,
+  "chat.subagents.allowInvocationsFromSubagents": false
+}

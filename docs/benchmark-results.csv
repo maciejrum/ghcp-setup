@@ -1,0 +1,11 @@
+task_id,variant,run,base_commit,prompt,acceptance_criteria,environment,models,started_at,finished_at,elapsed_minutes,credits_before,credits_after,credits_used,human_interventions,approval_prompts,tests,validation_evidence,review_critical,review_major,review_minor,rework_rounds,files_touched,unrelated_files,review_verdict,status,notes
+bug,A,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+bug,B,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+backend,A,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+backend,B,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+frontend,A,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+frontend,B,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+fullstack,A,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+fullstack,B,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+refactor,A,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
+refactor,B,1,,,,,,,,,,,,,,NOT_RUN,,,,,,,,NOT_RUN,NOT_RUN,
