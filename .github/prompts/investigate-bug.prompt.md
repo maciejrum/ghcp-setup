@@ -5,8 +5,7 @@ agent: Orchestrator
 argument-hint: Describe observed and expected behavior, reproduction steps, and whether to apply a fix.
 ---
 
-Investigate the bug described in the user's message and attached context.
-Delegate [bug-investigation](../skills/bug-investigation/SKILL.md) to Explorer. If execution is needed, delegate a bounded reproduction to Implementer.
-Return evidence, reproduction status, root cause or hypothesis, and proposed fix/test scope. Do not modify application code unless the user requested a fix. When a fix is requested, complete implementation, validation, and independent review.
-If no symptom or failing behavior is supplied, ask for it before proceeding.
-
+Investigate the bug in the user's message and attached context.
+Delegate scoped [bug-investigation](../skills/bug-investigation/SKILL.md) to Explorer, reusing current evidence. If execution is needed, assign bounded reproduction to Implementer with remaining budgets.
+Return evidence, reproduction status, root cause or hypothesis, confidence with reason, proposed fix/test boundary and blockers. Do not modify application code unless a fix was requested.
+If a fix is requested, complete implementation, validation and independent review under the workflow contract. Missing environment or evidence does not authorize speculative fixes. If no symptom is supplied, ask for it before proceeding.

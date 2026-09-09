@@ -11,5 +11,4 @@ applyTo: "**/*.ts,**/*.tsx"
 - Use the existing approach for URL filters and pagination. Consider stale requests, cache invalidation, and resetting pagination when filters change.
 - Handle loading, empty, success, and error states. Preserve keyboard access, semantic controls, and accessible labels.
 - Reuse the existing component library and design conventions.
-- Test observable behavior with the configured test runner and React Testing Library or existing equivalent. Use the repository's lint and typecheck scripts and package manager.
-
+- Test observable behavior with the configured test runner and React Testing Library or existing equivalent. Reuse current sourced lint/typecheck commands and package-manager information from the task brief; inspect configuration only if missing or changed.

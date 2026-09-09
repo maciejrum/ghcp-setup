@@ -5,7 +5,7 @@ agent: Orchestrator
 argument-hint: Specify the change purpose and review scope, such as working tree or base/head.
 ---
 
-Coordinate an independent review of the requested change using [code-review](../skills/code-review/SKILL.md) through Reviewer.
-Use the user's explicit diff range when supplied; otherwise inspect current working-tree changes and state that scope. Preserve pre-existing changes and include untracked files within scope.
-Escalate only evidence-backed serious concerns to Deep Reviewer. Report findings, validation evidence, unresolved risks, and the final verdict. Do not delegate fixes unless the user asks for them. If there are no changes to inspect, report that fact rather than approving an empty review.
-
+Delegate independent [code-review](../skills/code-review/SKILL.md) directly to Reviewer.
+Pass original requirements and explicit diff range when supplied; otherwise Reviewer inspects current working-tree changes, including relevant untracked files, and records the reviewed state. Do not guess a baseline or claim authorship of existing edits.
+Escalate only a precise evidence-backed serious question within budget. A REFUTED deep concern returns to Reviewer for the full verdict; CONFIRMED findings are reported without fixes. Missing required evidence is BLOCKED.
+Report inspected scope/revision, findings, validation and final verdict. With no changes, report REVIEWED with review_verdict NOT_RUN, not APPROVED. Do not delegate fixes without a user request.

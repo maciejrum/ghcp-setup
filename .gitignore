@@ -11,3 +11,5 @@ coverage/
 .env.*
 !.env.example
 
+# Local task checkpoints and raw agent traces
+.local/engineering-team/

@@ -1,18 +1,24 @@
 ---
 name: run-validation
-description: Select and run focused tests, lint, and type checks for changed code, reporting reproducible commands and distinguishing failures from checks not run.
+description: Verify an identified revision with focused checks, reusing applicable evidence and separating code defects from environmental blockers.
 ---
 
 # Run validation
 
-1. Identify the changed behavior, affected applications, and required checks. Read manifests, lockfiles, test configuration, and contributor documentation for the actual package manager and commands.
-2. Check that commands target local test resources and do not invoke production services, destructive setup, auto-fix, or snapshot updates. Respect approval prompts. If execution is unavailable in your role, provide a validation plan to the coordinator.
-3. Run the smallest relevant tests first in non-watch mode. For a bug fix, demonstrate the regression when practical without overwriting user changes to recreate a baseline.
-4. Run configured lint/type checks for affected areas and required integration checks. Expand testing when contracts, shared code, or failures justify it. Avoid repeating passing runs without new evidence.
-5. Classify failures as caused by the change, pre-existing (with evidence), or environmental. The implementer fixes introduced failures; reviewers report them without editing.
-6. Inspect unexpected tracked changes from tooling; report them and never discard user changes automatically.
+1. Start with the Task Brief's required checks and acceptance criteria. Reuse sourced commands when relevant configuration is unchanged; inspect manifests, dependencies or docs only for a gap, contradiction or invalidated source. Make required checks explicit before editing.
+2. Verify revision/environment identity and that commands use local resources, non-watch mode and no destructive setup, production services, auto-fix or snapshot updates. Respect approvals. Roles without execution tools return the plan to the coordinator.
+3. Run the smallest relevant tests first. Demonstrate a bug regression when practical without overwriting user changes to recreate the original state.
+4. Run agreed lint/type/integration checks. Expand only when contracts, shared code or failures justify it. Reuse prior passes only for unchanged relevant inputs/environment, recording the reason. Independent review may rerun a check to resolve a specific uncertainty.
+5. Classify failures as introduced, pre-existing with evidence, environmental or unknown. Implementer fixes confirmed introduced defects; reviewers report without editing. A required check unavailable or failing without a confirmed patch defect is BLOCKED, not a speculative repair request.
+6. Apply the supplied retry budget only after checking partial completion and identifying a transient cause or changed prerequisite. Do not repeatedly execute identical failing commands. Inspect tooling side effects without discarding user work.
 
-Record each command with working directory, exit status, and concise result. Use PASS, FAIL, or NOT RUN; record missing dependencies, services, permissions, or configuration explicitly. Missing required checks block completion.
+Return the validation records in the [workflow contract](../../agents/contracts/workflow.md): check/criterion IDs, revision, command, cwd, exit code, PASS/FAIL/NOT_RUN, classification, summary and evidence reference. Missing required checks block DONE; never silently reduce the agreed validation plan.
 
-For this configuration-only repository, use `python scripts/validate_config.py` after installing `requirements-dev.txt`. This validates configuration structure and role constraints; it does not run Copilot or validate a consuming application. In application repositories use their own configured test/lint/typecheck commands.
+In this configuration-only repository, install requirements-dev.txt in an isolated environment, then run from the root:
 
+```text
+python scripts/validate_config.py
+python -m unittest discover -s tests -v
+```
+
+These checks validate static configuration and its validator, not Copilot runtime or an application. In consuming applications use their own commands; these template maintenance scripts are not part of the copied agent configuration.
