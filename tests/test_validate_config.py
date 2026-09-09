@@ -48,6 +48,70 @@ class ConfigValidationTests(unittest.TestCase):
     def test_current_configuration_passes(self):
         validator.validate(self.root)
 
+    def test_private_jira_skill_is_not_required_for_static_validation(self):
+        self.assertFalse((self.root / ".github/skills/jira").exists())
+        validator.validate(self.root)
+
+    def test_old_workflow_contract_rejected(self):
+        self.change_metadata(".github/agents/contracts/workflow.md", version=2)
+        self.invalid("Expected workflow contract version 3")
+
+    def test_ticket_intake_cannot_gain_mutation_permissions(self):
+        relative = ".github/agents/contracts/ticket-context.md"
+        original = (self.root / relative).read_text(encoding="utf-8")
+        for updates, expected in (
+            ({"jira_access": "read-write"}, "must be read-only"),
+            ({"repository_writes": True}, "must not write repository"),
+            ({"repository_writes": "false"}, "must not write repository"),
+            ({"mode": "implement"}, "must be context-only"),
+            ({"executor": "Explorer"}, "must use Implementer"),
+        ):
+            with self.subTest(updates=updates):
+                (self.root / relative).write_text(original, encoding="utf-8")
+                self.change_metadata(relative, **updates)
+                self.invalid(expected)
+
+    def test_instance_configuration_cannot_enter_public_contract_metadata(self):
+        self.change_metadata(".github/agents/contracts/ticket-context.md",
+                             base_url="https://example.invalid")
+        self.invalid("Unexpected ticket-context metadata")
+
+    def test_ticket_results_cannot_claim_completion(self):
+        self.change_metadata(".github/agents/contracts/ticket-context.md",
+                             results=["FETCHED", "PARTIAL", "BLOCKED", "DONE"])
+        self.invalid("Invalid ticket-context results")
+
+    def test_unrecognized_external_skill_rejected(self):
+        self.change_metadata(".github/agents/contracts/ticket-context.md",
+                             external_skill="replacement")
+        self.invalid("Expected external skill jira")
+
+    def test_private_skill_directory_cannot_be_bundled(self):
+        # Even an empty integration folder would invite accidental vendoring.
+        (self.root / ".github/skills/jira").mkdir()
+        self.invalid("External Jira skill must remain outside")
+
+    def test_ticket_prompt_cannot_override_model_or_tools(self):
+        relative = ".github/prompts/implement-ticket.prompt.md"
+        original = (self.root / relative).read_text(encoding="utf-8")
+        for key, value in (("tools", ["execute"]), ("model", "GPT-5.6 Luna")):
+            with self.subTest(key=key):
+                (self.root / relative).write_text(original, encoding="utf-8")
+                self.change_metadata(relative, **{key: value})
+                self.invalid("role override")
+
+    def test_ticket_prompt_must_route_to_coordinator(self):
+        self.change_metadata(".github/prompts/implement-ticket.prompt.md",
+                             agent="Implementer")
+        self.invalid("prompt must use Orchestrator")
+
+    def test_ticket_contract_reference_required_on_intake_role(self):
+        path = self.root / ".github/agents/implementer.agent.md"
+        path.write_text(path.read_text(encoding="utf-8").replace(
+            "(contracts/ticket-context.md)", "(contracts/missing-ticket.md)"),
+            encoding="utf-8")
+        self.invalid("missing ticket-context contract reference")
+
     def test_orchestrator_cannot_gain_file_or_terminal_tools(self):
         for tool in ("read", "search", "edit", "execute"):
             with self.subTest(tool=tool):

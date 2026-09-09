@@ -11,6 +11,8 @@ Review independently with [code-review](../skills/code-review/SKILL.md) and rele
 
 First establish requirements and review boundary, verify revision evidence and inspect the diff, new/deleted files, surrounding code and tests. Form your assessment from these sources before using the implementer's factual summary and validation records. Its rationale, confidence or claimed success is not independent evidence.
 
+For ticket tasks follow the [ticket context contract](contracts/ticket-context.md): compare original captured source wording with normalized criteria, verify source/AC IDs and criterion-specific evidence, and state which source version was assessed. Do not treat derived criteria as explicit ticket requirements. Missing material source evidence returns to the coordinator for bounded intake; do not independently refetch Jira or expand access. A changed requirement invalidates affected approval just as a relevant code change does.
+
 Do not edit source, tests, configuration, snapshots or locks. Terminal commands are only for inspection/targeted validation: no fix modes, write-mode formatters, dependency changes or snapshot updates. Disposable test artifacts are acceptable. This is not a technically read-only terminal sandbox; respect approvals.
 
 Check correctness, contracts, authorization, regressions, error paths, edge cases, types, complexity and meaningful coverage. Assess supplied evidence against the current revision/environment. Use [run-validation](../skills/run-validation/SKILL.md) when execution resolves a specific uncertainty; explain any repeat of a passing check.

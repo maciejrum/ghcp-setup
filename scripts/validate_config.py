@@ -1,4 +1,4 @@
-"""Validate the v2 static contract; runtime behavior needs the VS Code scenarios."""
+"""Validate the v3 static contract without accessing external skills or services."""
 
 import csv
 import json
@@ -30,7 +30,7 @@ MODEL_TIERS = {
     "GPT-5.6 Sol": 2,  # Powerful
 }
 SKILLS = {"feature-analysis", "bug-investigation", "run-validation", "code-review"}
-PROMPTS = {"implement-feature", "investigate-bug", "review-change"}
+PROMPTS = {"implement-feature", "implement-ticket", "investigate-bug", "review-change"}
 CONTRACT_ENUMS = {
     "review_verdicts": {"APPROVED", "CHANGES REQUIRED", "DEEP REVIEW REQUIRED", "BLOCKED"},
     "deep_results": {"CONFIRMED", "REFUTED", "UNRESOLVED"},
@@ -105,6 +105,37 @@ def validate_models(slug, value):
     return models
 
 
+def validate_ticket_context(github):
+    """Check the public integration boundary, never the private implementation."""
+    path = github / "agents/contracts/ticket-context.md"
+    data = frontmatter(path)
+    expected = {
+        "version", "external_skill", "executor", "mode", "jira_access",
+        "repository_writes", "results",
+    }
+    require(set(data) == expected, "Unexpected ticket-context metadata")
+    require(type(data["version"]) is int and data["version"] == 1,
+            "Expected ticket-context contract version 1")
+    require(data["external_skill"] == "jira", "Expected external skill jira")
+    require(data["executor"] == ROLES["implementer"][0],
+            "Ticket intake must use Implementer")
+    require(data["mode"] == "context-only", "Ticket intake must be context-only")
+    require(data["jira_access"] == "read-only", "Ticket intake must be read-only")
+    require(data["repository_writes"] is False,
+            "Ticket intake must not write repository files")
+    require(set(string_list(data["results"], "ticket-context results"))
+            == {"FETCHED", "PARTIAL", "BLOCKED"}, "Invalid ticket-context results")
+    require(not (github / "skills/jira").exists(),
+            "External Jira skill must remain outside this repository")
+    for slug in ("orchestrator", "implementer", "reviewer"):
+        body = (github / f"agents/{slug}.agent.md").read_text(encoding="utf-8")
+        require("(contracts/ticket-context.md)" in body,
+                f"{slug}: missing ticket-context contract reference")
+    prompt = (github / "prompts/implement-ticket.prompt.md").read_text(encoding="utf-8")
+    require("(../agents/contracts/ticket-context.md)" in prompt,
+            "implement-ticket: missing ticket-context contract reference")
+
+
 def validate_links(root):
     paths = [root / "README.md", *sorted((root / ".github").rglob("*.md")),
              *sorted((root / "docs").rglob("*.md"))]
@@ -132,7 +163,7 @@ def validate_benchmark(root, contract):
         "deep_reviews", "remaining_defects", "accepted", "trace_ref",
         "tests", "review_verdict", "status",
     }
-    require(required <= set(header), "Missing v2 benchmark columns")
+    require(required <= set(header), "Missing benchmark columns")
     for number, values in enumerate(rows[1:], 2):
         require(len(values) == len(header), f"Benchmark row {number}: wrong column count")
         row = dict(zip(header, values))
@@ -155,7 +186,7 @@ def validate(root):
     require(
         {p.relative_to(agent_dir).as_posix() for p in agent_dir.rglob("*.agent.md")}
         == {f"{slug}.agent.md" for slug in ROLES},
-        "Expected exactly the five v2 agent files",
+        "Expected exactly the five v3 agent files",
     )
     require(
         {p.name for p in agent_dir.glob("*.md")} == {f"{slug}.agent.md" for slug in ROLES},
@@ -164,8 +195,8 @@ def validate(root):
     contract_path = agent_dir / "contracts/workflow.md"
     contract = frontmatter(contract_path)
     require(set(contract) == {"version", *CONTRACT_ENUMS}, "Unexpected contract metadata")
-    require(type(contract["version"]) is int and contract["version"] == 2,
-            "Expected workflow contract version 2")
+    require(type(contract["version"]) is int and contract["version"] == 3,
+            "Expected workflow contract version 3")
     for key, expected in CONTRACT_ENUMS.items():
         require(set(string_list(contract[key], key)) == expected, f"Invalid contract {key}")
 
@@ -212,7 +243,7 @@ def validate(root):
         )
 
     skill_paths = list((github / "skills").glob("*/SKILL.md"))
-    require({p.parent.name for p in skill_paths} == SKILLS, "Expected four v2 skills")
+    require({p.parent.name for p in skill_paths} == SKILLS, "Expected four bundled skills")
     for path in skill_paths:
         data = frontmatter(path)
         require(data.get("name") == path.parent.name, f"{path}: skill name must match directory")
@@ -222,7 +253,7 @@ def validate(root):
 
     prompt_paths = list((github / "prompts").glob("*.prompt.md"))
     require({p.name.removesuffix(".prompt.md") for p in prompt_paths} == PROMPTS,
-            "Expected three v2 prompts")
+            "Expected four v3 prompts")
     for path in prompt_paths:
         data = frontmatter(path)
         require(set(data) <= {"name", "description", "agent", "argument-hint"},
@@ -254,8 +285,9 @@ def validate(root):
     )
     require(isinstance(settings, dict), "Settings must be a JSON object")
     for key in ("chat.tools.terminal.enableAutoApprove", "chat.subagents.allowInvocationsFromSubagents"):
-        require(settings.get(key) is False, f"{key} must remain false for v2")
+        require(settings.get(key) is False, f"{key} must remain false for v3")
 
+    validate_ticket_context(github)
     validate_links(root)
     validate_benchmark(root, contract)
 
@@ -266,5 +298,5 @@ if __name__ == "__main__":
     except (OSError, ValueError, TypeError, yaml.YAMLError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         sys.exit(1)
-    print("PASS: v2 roles, model policy, protocol enums, skills, prompts, links, settings, benchmark")
+    print("PASS: v3 roles, model policy, protocols, external ticket intake, skills, prompts, links, settings, benchmark")
     print("Prose effectiveness, model availability and Copilot behavior require VS Code scenarios.")

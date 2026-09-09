@@ -6,6 +6,7 @@ argument-hint: Describe observed and expected behavior, reproduction steps, and 
 ---
 
 Investigate the bug in the user's message and attached context.
+If its source is an explicit Jira ticket reference, first use Orchestrator's context-only intake route, preserving investigation-only intent; retrieving a ticket does not authorize a fix.
 Delegate scoped [bug-investigation](../skills/bug-investigation/SKILL.md) to Explorer, reusing current evidence. If execution is needed, assign bounded reproduction to Implementer with remaining budgets.
 Return evidence, reproduction status, root cause or hypothesis, confidence with reason, proposed fix/test boundary and blockers. Do not modify application code unless a fix was requested.
 If a fix is requested, complete implementation, validation and independent review under the workflow contract. Missing environment or evidence does not authorize speculative fixes. If no symptom is supplied, ask for it before proceeding.

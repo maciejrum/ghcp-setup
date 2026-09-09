@@ -1,5 +1,5 @@
 ---
-version: 2
+version: 3
 review_verdicts: ['APPROVED', 'CHANGES REQUIRED', 'DEEP REVIEW REQUIRED', 'BLOCKED']
 deep_results: ['CONFIRMED', 'REFUTED', 'UNRESOLVED']
 final_statuses: ['DONE', 'INVESTIGATED', 'REVIEWED', 'BLOCKED']
@@ -8,7 +8,7 @@ check_results: ['PASS', 'FAIL', 'NOT_RUN']
 
 # Engineering Team workflow contract
 
-This is the shared v2 protocol, not an agent or a skill. Load relevant sections once and reuse them until configuration changes. Skills contain procedures; agent definitions grant tools. These instructions guide a model, not a deterministic execution engine.
+This is the shared v3 protocol, not an agent or a skill. It extends v2 with optional external ticket intake while keeping the same roles and final statuses. Load relevant sections once and reuse them until configuration changes. Skills contain procedures; agent definitions grant tools. These instructions guide a model, not a deterministic execution engine.
 
 ## Task brief
 
@@ -19,12 +19,15 @@ Required fields (use unknown with a reason instead of inventing values):
 ```yaml
 task_id: feature-017
 brief_version: 1
-mode: implement # investigate | reproduce | review | validate | recover
+mode: implement # context-only | investigate | reproduce | review | validate | recover
 request: <original outcome and user constraints>
 scope: <assigned area, paths, exclusions, and shared-contract owner>
 acceptance_criteria:
   - id: AC1
     requirement: <observable behavior>
+    origin: <explicit or derived, for ticket tasks>
+    source_refs: <source IDs, for ticket tasks>
+sources: <captured source wording and versions for ticket tasks; omit otherwise>
 baseline: <base/head or initial working-tree evidence; pending capture if unknown>
 findings:
   - path: <exact path>
@@ -56,7 +59,7 @@ Do not copy whole files, transcripts, secrets or unrelated findings. Include sho
 ## Role results
 
 - Explorer: task/brief IDs, scope, evidence with paths/symbols, reusable patterns, affected contracts, sourced validation plan, unknowns, confidence with reason and smallest change boundary. Stop when assigned questions are answered.
-- Implementer: task/brief IDs, baseline/result revision evidence, changed files and factual summary, criterion evidence, validation records, finding IDs addressed/disputed, attempts spent, unfinished work and blockers.
+- Implementer: task/brief IDs, baseline/result revision evidence, changed files and factual summary, criterion evidence, validation records, finding IDs addressed/disputed, attempts spent, unfinished work and blockers. Exception: context-only assignments return the [ticket context result](ticket-context.md) and stop without code or Jira changes.
 - Reviewer: reviewed revision/scope, independently inspected paths/contracts, findings, validation evidence assessed, outstanding blockers and exactly one review verdict.
 - Deep Reviewer: finding ID, revision, precise question, severity, evidence, correction or missing evidence and exactly one deep result. It never approves the complete change.
 
@@ -91,7 +94,7 @@ Deep results: CONFIRMED routes authorized fixes through Implementer, validation 
 
 DONE requires evidence for every acceptance criterion, all agreed required checks passing for the current state, latest complete review APPROVED, no outstanding blocker and preserved user changes. Agree required checks before implementation; never silently drop a failed/unavailable check. Any justified validation-plan change is explicit, versioned and reviewed; changing a user-required check needs the user's decision.
 
-INVESTIGATED reports diagnosis/reproduction without claiming a fix. REVIEWED reports the verdict/findings without implying approval; confirmed defects are valid review-only outcomes. An inability to finish the requested investigation/review is BLOCKED. With no changes to inspect use REVIEWED with review_verdict NOT_RUN in the report only; NOT_RUN is not an approval verdict.
+INVESTIGATED reports diagnosis/reproduction or explicitly requested context-only findings without claiming a fix. REVIEWED reports the verdict/findings without implying approval; confirmed defects are valid review-only outcomes. An inability to finish the requested investigation/review is BLOCKED. With no changes to inspect use REVIEWED with review_verdict NOT_RUN in the report only; NOT_RUN is not an approval verdict.
 
 Orchestrator owns the numeric budgets in its agent instructions and passes remaining counters. New invocations, fallback models and deep review never reset counters. Retry only with evidence of a transient cause or changed prerequisite; permission denials/missing configuration do not justify identical retries. Check whether an edit already happened before retrying it.
 
@@ -101,4 +104,4 @@ If a writer stops returning results, first confirm termination. Without confirma
 
 At stage transitions emit one short line: task ID, stage, role, scope, routing reason and remaining relevant budget. Report requested/resolved models, time, tokens, calls and credits only from runtime evidence; otherwise unknown. Model self-identification is not telemetry. Avoid per-read narration.
 
-Final report: status; criteria/evidence; changed/inspected files; commands/cwd/results including NOT_RUN; reviewed revision/verdict; escalation result; repair/recovery counts; risks and concrete next action for blockers. Link evidence rather than pasting logs. Never invent measurements.
+Final report: status; criteria/evidence; changed/inspected files; commands/cwd/results including NOT_RUN; reviewed revision/verdict; escalation result; repair/recovery counts; risks and concrete next action for blockers. Ticket tasks additionally follow the [ticket context contract](ticket-context.md) for source versions, requirement wording, privacy, freshness and draft delivery text. Its external-only checkpoint rule takes precedence over generic local checkpoint guidance for private ticket data. Link evidence rather than pasting logs. Never invent measurements.

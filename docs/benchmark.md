@@ -20,6 +20,7 @@ Freeze exact prompts, acceptance checks and quality criteria before either run. 
 - `orchestration-control`: a separate experiment using the same model(s) and shared instructions/skills in both variants where feasible. Record all model assignments and any remaining differences. Change model-policy validation explicitly in a disposable variant; the default validator intentionally pins the production roles.
 - `v1-v2`: optional comparison of configuration revisions with otherwise identical tasks and environment.
 - Model/confidence/parallelism trials are separate IDs described in [experiments](experiments.md).
+- `ticket-v3`: optional Windows end-to-end intake comparison. Give both variants access to the same external personal skill and equivalent ticket/document versions; keep private data outside this repository. Include intake time, calls and credits, source gaps, and AC-to-evidence coverage in notes. If source content changes between paired runs, mark the pair incomparable. Do not relabel the existing v2 rows as measured v3 results.
 
 Five pairs are a pilot. For stronger evidence, use at least three repetitions per task/variant as an initial plan, then expand if variability warrants it. Randomize paired A/B order and record it. Report per-task results, medians and spread; do not claim statistical certainty from a small sample.
 

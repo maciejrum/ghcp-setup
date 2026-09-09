@@ -38,6 +38,8 @@ These are manual runtime tests, not results already achieved by this repository.
 
 The partial-failure drill is detailed in [failure recovery](scenarios/failure-recovery.md).
 
+V3's optional ticket entry has separate [Windows/Jira scenarios](jira-integration.md). Start with a context-only read through the existing personal skill, then run one small real ticket end to end. Keep the private integration and source payloads outside this repository. An initial Implementer intake invocation is not a code implementation stage.
+
 ## Ideal full-stack feature
 
 Use an application with a real list of objects and a validation status. Prepare local test data and agreed baseline checks.

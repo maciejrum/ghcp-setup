@@ -8,6 +8,9 @@ Template only. Fill from a real run; use unknown/NOT_RUN for missing evidence.
 | Application baseline and configuration revision | |
 | VS Code/harness and environment | |
 | Acceptance criteria | |
+| Ticket/source versions and observation time, if applicable | |
+| Explicit versus derived AC and source references | |
+| Context-only intake calls, gaps and freshness limitations | |
 | Requested → resolved models | |
 | Routing reasons and deviations | |
 | Parallel scopes and shared-contract owner | |
@@ -22,5 +25,6 @@ Template only. Fill from a real run; use unknown/NOT_RUN for missing evidence.
 | Actual elapsed time and credits | |
 | Trace reference and privacy review | |
 | Final status and residual risks | |
+| Draft PR title/description in chat, for ticket implementation | |
 
 For replay, import the local debug session and show a few decisive transitions. Show deep review only if justified; if it was unused, say why. Identify deliberately injected failure fixtures. Do not present estimated or example values as measurements.

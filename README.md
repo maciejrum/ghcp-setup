@@ -1,12 +1,15 @@
-# Copilot Engineering Team v2
+# Copilot Engineering Team v3
 
 A GitHub Copilot configuration for VS Code and existing **FastAPI + React/Next.js + TypeScript** applications. This repository contains configuration, validation and demonstration material, not application code.
 
-V2 keeps five roles and adds a shared Task Brief, revision-bound evidence, explicit blockers, bounded recovery and observable routing. One role writes; independent review decides whether the complete change is acceptable.
+V3 adds optional external Jira intake on Windows to v2's five-role workflow, Task Brief, revision-bound evidence and bounded recovery. The personal skill and helper stay outside this repository. One role writes; independent review decides whether the complete change is acceptable.
 
 ```mermaid
 flowchart TD
     U[Developer] --> O[Orchestrator · Sol]
+    O -->|Ticket context missing| J[Implementer · context-only · external Jira skill]
+    J -->|Sources and criteria| O
+    J -->|Required context unavailable| X[BLOCKED]
     O --> E[Explorer · Luna · usually 1, sometimes 2 parallel scopes]
     E --> B[Versioned Task Brief]
     O -->|Complete current brief for a narrow low-risk task| B
@@ -25,7 +28,7 @@ flowchart TD
     R -->|Blocked or budget exhausted| X
 ```
 
-Arrows describe the workflow: Orchestrator performs all delegation. Investigation-only and review-only requests use their own shorter routes. Validation normally runs inside the implementation invocation. A deep result never approves the full change.
+Arrows describe the workflow: Orchestrator performs all delegation. Ticket intake is a read-only assignment before repository analysis and implementation, not a second writer. Investigation-only and review-only requests use their own shorter routes. Validation normally runs inside the implementation invocation. A deep result never approves the full change.
 
 ## Components
 
@@ -35,11 +38,12 @@ Arrows describe the workflow: Orchestrator performs all delegation. Investigatio
 | [Path instructions](.github/instructions/) | Backend, frontend and test conventions |
 | [Agents](.github/agents/) | Five roles and minimal tool sets |
 | [Workflow contract](.github/agents/contracts/workflow.md) | Task Brief, result formats, revision evidence, severity and statuses |
+| [Ticket contract](.github/agents/contracts/ticket-context.md) and [Windows guide](docs/jira-integration.md) | External personal Jira skill, context-only intake and requirement provenance |
 | [Skills](.github/skills/) | Analysis, investigation, validation and review procedures |
-| [Prompts](.github/prompts/) | Feature, investigation and review entry points |
+| [Prompts](.github/prompts/) | Feature, ticket, investigation and review entry points |
 | [Settings](.vscode/settings.json) | No terminal auto-approval or nested delegation |
 | [Validator](scripts/validate_config.py) and [tests](tests/test_validate_config.py) | Static contract regression checks |
-| [CI](.github/workflows/validate-config.yml) | Run static checks on Python 3.10 and 3.12 |
+| [CI](.github/workflows/validate-config.yml) | Static checks on Python 3.10/3.12, Linux/Windows; no Jira access |
 | [Demo](docs/demo.md) and [scorecard](docs/demo-scorecard.md) | Runtime checks and an evidence-led presentation |
 | [Observability](docs/observability.md) | Local traces, model routing and cost evidence |
 | [Benchmark](docs/benchmark.md) and [worksheet](docs/benchmark-results.csv) | Repeatable measurements, initially NOT_RUN |
@@ -52,10 +56,12 @@ Arrows describe the workflow: Orchestrator performs all delegation. Investigatio
 3. Replace the template architecture bullet with real application directories. Adapt path globs and conventions; FastAPI rules apply only where those libraries are used. Record known validation commands and cwd from actual manifests.
 4. Merge the two [settings](.vscode/settings.json). Use standard approvals rather than Bypass Approvals/Autopilot. Organization policy takes precedence.
 5. Check model names through VS Code suggestions and actual invocations. All configured fallbacks are initially disabled; adapting the model policy requires a conscious configuration change and runtime verification.
-6. Select **Orchestrator**, whose only tool is `agent`. Other roles are hidden from the picker. If the shared contract is not injected into context, its first Explorer/Reviewer returns coordination rules alongside ordinary findings. This requires no separate bootstrap call.
+6. Select **Orchestrator**, whose only tool is `agent`. Other roles are hidden from the picker. If the shared contract is not injected into context, the first reader returns coordination rules alongside its result: Implementer for ticket intake, otherwise Explorer/Reviewer. This requires no separate bootstrap call.
 7. Run the [first-run scenarios](docs/demo.md) after installation, changes to models/tools, or a harness upgrade. Do not repeat setup checks for every task.
 
 V1 migration replaces role/skill/prompt contents, adds the shared contract and removes Orchestrator's read/search tools. Keep the existing two approval settings. No new agent or Test Agent is needed.
+
+From v2, merge the updated workflow/agent definitions and four prompts, including `implement-ticket`, plus the new ticket contract. For ticket tasks follow the [Windows integration guide](docs/jira-integration.md). Keep your personal `jira` skill/helper, company configuration and credentials outside the repository. Plain-text tasks have no Jira dependency.
 
 Custom-agent availability depends on the account, client and organization. Verify discovery and effective tools in Chat diagnostics. [Custom agents](https://code.visualstudio.com/docs/agent-customization/custom-agents).
 
@@ -76,6 +82,7 @@ Where prompt files are supported:
 
 ```text
 /implement-feature Add status filtering while preserving API compatibility.
+/implement-ticket <YOUR_TICKET_KEY> Preserve API compatibility.
 /investigate-bug Changing a filter on page two returns an empty list. Diagnose only.
 /review-change Review the current working-tree status-filter changes without fixes.
 ```
@@ -96,7 +103,7 @@ A subagent cannot exceed its parent's cost tier. Keeping Sol supports the full c
 
 Prefer Luna for scoped exploration, compact sourced handoffs, reuse of applicable checks, and fewer unnecessary invocations. Parallelism can reduce latency while increasing token usage. Independent Reviewer reads are useful verification, not automatically waste.
 
-Fallback lists are availability preferences, not automatic recovery after partial writes. Before enabling one, smoke-test it, add it to `APPROVED_FALLBACKS` and `MODEL_TIERS` in the validator, then configure at most one alternative in that role's model list. Every possible parent must support the entire child chain; every possible reviewer/deep-reviewer model must differ from every possible implementer model. No fallback is pre-approved in v2.
+Fallback lists are availability preferences, not automatic recovery after partial writes. Before enabling one, smoke-test it, add it to `APPROVED_FALLBACKS` and `MODEL_TIERS` in the validator, then configure at most one alternative in that role's model list. Every possible parent must support the entire child chain; every possible reviewer/deep-reviewer model must differ from every possible implementer model. No fallback is pre-approved in v3.
 
 Use actual Copilot account/session usage, not guessed request multipliers or agent self-reports. Current token/cache pricing is maintained by GitHub; this template does not hardcode prices. [Copilot pricing](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing).
 
@@ -130,4 +137,4 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-The validator checks metadata, role/model permissions, fallback compatibility, protocol enums, links, settings and worksheet structure. Negative tests mutate disposable copies. It does not prove prose effectiveness, glob coverage in a consuming application, runtime model availability, independence in an actual review or application correctness. Those require the documented VS Code scenarios and real benchmark runs.
+The validator checks metadata, role/model permissions, fallback compatibility, protocol enums, external-intake boundaries, links, settings and worksheet structure. Negative tests mutate disposable copies. It neither reads the external skill nor connects to Jira. It does not prove prose effectiveness, glob coverage in a consuming application, runtime model/skill availability, independence in an actual review or application correctness. Those require the documented VS Code scenarios and real benchmark runs.

@@ -6,6 +6,7 @@ argument-hint: Specify the change purpose and review scope, such as working tree
 ---
 
 Delegate independent [code-review](../skills/code-review/SKILL.md) directly to Reviewer.
+If an explicit Jira ticket supplies missing original requirements, first use Orchestrator's context-only intake route, preserving review-only intent. Reuse an already available captured source rather than fetching again.
 Pass original requirements and explicit diff range when supplied; otherwise Reviewer inspects current working-tree changes, including relevant untracked files, and records the reviewed state. Do not guess a baseline or claim authorship of existing edits.
 Escalate only a precise evidence-backed serious question within budget. A REFUTED deep concern returns to Reviewer for the full verdict; CONFIRMED findings are reported without fixes. Missing required evidence is BLOCKED.
 Report inspected scope/revision, findings, validation and final verdict. With no changes, report REVIEWED with review_verdict NOT_RUN, not APPROVED. Do not delegate fixes without a user request.
