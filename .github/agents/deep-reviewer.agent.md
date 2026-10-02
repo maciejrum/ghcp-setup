@@ -1,7 +1,7 @@
 ---
 name: Deep Reviewer
 description: Resolves one evidence-backed serious review question without approving the complete change.
-model: GPT-5.6 Sol
+model: Claude Opus 5.5
 tools: ['read', 'search', 'execute']
 agents: []
 user-invocable: false

@@ -8,7 +8,7 @@ Run the static validator and unit tests as described in the [README](../README.m
 2. Confirm Orchestrator has only agent delegation. Confirm Explorer has read/search and no execute/edit. Check effective tool lists for the other roles.
 3. Send: "Ask Explorer to inspect this configuration template and identify its validation commands. Do not change files. Include the shared workflow contract's coordination rules if needed."
 4. Verify Luna actually ran, the brief cites the existing configuration rather than imaginary application code, and Orchestrator did not browse or execute. Confirm the shared contract reached the coordinator, whether by prompt injection or Explorer's scoped response.
-5. Use a small real application change to verify Sonnet implementation → validation → Terra independent review, with revision evidence and truthful reports.
+5. Use a small real application change to verify Sonnet implementation → validation → GPT-6 Sol independent review, with revision evidence and truthful reports.
 6. Check model availability and parent cost-tier compatibility for all configured roles. Exercise Deep Reviewer only with a real serious question or an explicitly labeled test fixture. Do not manufacture an issue in a normal task.
 
 Repeat after relevant configuration/harness/model changes, not before each task. If agent-only Orchestrator cannot obtain the contract through delegation, record a compatibility failure. Do not silently restore broad tools.
@@ -54,13 +54,13 @@ Add meaningful backend/frontend tests and independent review.
 
 | Stage | What the developer should see |
 | --- | --- |
-| Planning — Sol | Observable criteria, scope/exclusions, routing reason and initial budget |
+| Planning — Opus 5.5 | Observable criteria, scope/exclusions, routing reason and initial budget |
 | Parallel exploration — Luna ×2 | Backend owns parameter/schema/query discovery and backend tests; frontend owns consumers, URL/cache/pagination and UI tests |
-| Brief — Sol | Reconciled API contract, exact paths/symbols, sourced commands/cwd, unknowns; no repeated full exploration |
+| Brief — Opus 5.5 | Reconciled API contract, exact paths/symbols, sourced commands/cwd, unknowns; no repeated full exploration |
 | Implementation — Sonnet | Captured before-state, one writer, scoped change/tests; extra searches justified by gaps |
 | Validation — same Implementer invocation | Criterion-to-check evidence, command results and current revision; only invalidated checks rerun |
-| Independent review — Terra | Actual diff/contracts assessed independently; grounded finding IDs and explicit verdict |
-| Optional deep review — Sol | Only a precise serious unresolved question; result routes back through the full workflow |
+| Independent review — GPT-6 Sol | Actual diff/contracts assessed independently; grounded finding IDs and explicit verdict |
+| Optional deep review — Opus 5.5 | Only a precise serious unresolved question; result routes back through the full workflow |
 | Final report | Status, criteria/evidence, files, reviewed revision, checks, attempts, actual models/credits if measurable |
 
 A representative transition message (format example, not a measured run):
@@ -72,6 +72,8 @@ feature-017 · REVIEW · Reviewer · API/UI diff · independent contract check �
 Do not run Deep Reviewer simply to display another model. Show a real trace via the built-in debug panel and fill the [scorecard](demo-scorecard.md). A failure/recovery run is a separate labeled demonstration.
 
 ## Presentation evidence
+
+Use the [Incident Desk case](../benchmark/README.md) for a repeatable comparison. Keep its assessor outside the A/B workspaces. Collect measurements first, then follow the [5–10 minute presentation plan](presentation-plan.md).
 
 Show requirements → scoped handoff → actual diff → validation evidence → independent findings → final verdict. Use [benchmark results](benchmark-results.csv) only when measured; show blocked/failed attempts alongside successes. Before/after claims must distinguish the full model-routing package from the isolated effect of orchestration.
 

@@ -1,4 +1,6 @@
-# Benchmark: Agent Mode versus Engineering Team v2
+# Benchmark: Agent Mode versus Engineering Team v4
+
+Start with the ready-to-run [Incident Desk case](../benchmark/README.md). It includes a baseline application, one exact prompt, separate A/B workspaces, external API/browser checks and a compact CSV/Excel tracker. The guide below is the broader methodology for experiments on real applications.
 
 Compare **A: standard Copilot Agent Mode** with **B: the configured Engineering Team** on real application tasks. This measures the complete workflow/model-routing package. Keep failures and blocked attempts; never substitute estimates or sample results for measurements.
 
@@ -16,7 +18,7 @@ Freeze exact prompts, acceptance checks and quality criteria before either run. 
 
 ## Experiments and repetitions
 
-- `package-v2`: A versus B with their recorded model policies. This is a comparison of complete approaches, not isolated orchestration.
+- `package-v4`: A versus B with their recorded model policies. Both main agents use Opus 5.5 in the Incident Desk case; supporting models, roles and bundled team skills differ. This is a comparison of complete approaches, not isolated orchestration. The detailed worksheet's older `package-v2` rows remain unrun historical templates, not measured v4 results.
 - `orchestration-control`: a separate experiment using the same model(s) and shared instructions/skills in both variants where feasible. Record all model assignments and any remaining differences. Change model-policy validation explicitly in a disposable variant; the default validator intentionally pins the production roles.
 - `v1-v2`: optional comparison of configuration revisions with otherwise identical tasks and environment.
 - Model/confidence/parallelism trials are separate IDs described in [experiments](experiments.md).

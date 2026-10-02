@@ -1,7 +1,7 @@
 ---
 name: Explorer
 description: Read-only scoped repository research, bug diagnosis, and test-impact analysis with reusable evidence.
-model: GPT-5.6 Luna
+model: GPT-6 Luna
 tools: ['read', 'search']
 agents: []
 user-invocable: false

@@ -23,3 +23,26 @@ jobs:
       - run: python -m pip install -r requirements-dev.txt
       - run: python scripts/validate_config.py
       - run: python -m unittest discover -s tests -v
+
+  benchmark-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+          cache-dependency-path: benchmark/fixture/frontend/package-lock.json
+      - run: python -m pip install -r requirements.txt
+        working-directory: benchmark/fixture/backend
+      - run: python -m pytest -q
+        working-directory: benchmark/fixture/backend
+      - run: npm ci
+        working-directory: benchmark/fixture/frontend
+      - run: npm test
+        working-directory: benchmark/fixture/frontend
+      - run: npm run build
+        working-directory: benchmark/fixture/frontend

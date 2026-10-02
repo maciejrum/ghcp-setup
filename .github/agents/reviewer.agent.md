@@ -1,7 +1,7 @@
 ---
 name: Reviewer
 description: Independently reviews an identified revision against requirements, contracts, and validation evidence without editing.
-model: GPT-5.6 Terra
+model: GPT-6 Sol
 tools: ['read', 'search', 'execute']
 agents: []
 user-invocable: false

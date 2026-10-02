@@ -1,4 +1,4 @@
-"""Validate the v3 static contract without accessing external skills or services."""
+"""Validate v4 model policy and the v3 workflow without external services."""
 
 import csv
 import json
@@ -14,20 +14,23 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[1]
 ROLES = {
-    "orchestrator": ("Orchestrator", {"agent"}, "GPT-5.6 Sol"),
-    "explorer": ("Explorer", {"read", "search"}, "GPT-5.6 Luna"),
+    "orchestrator": ("Orchestrator", {"agent"}, "Claude Opus 5.5"),
+    "explorer": ("Explorer", {"read", "search"}, "GPT-6 Luna"),
     "implementer": ("Implementer", {"read", "search", "edit", "execute"}, "Claude Sonnet 5"),
-    "reviewer": ("Reviewer", {"read", "search", "execute"}, "GPT-5.6 Terra"),
-    "deep-reviewer": ("Deep Reviewer", {"read", "search", "execute"}, "GPT-5.6 Sol"),
+    "reviewer": ("Reviewer", {"read", "search", "execute"}, "GPT-6 Sol"),
+    "deep-reviewer": ("Deep Reviewer", {"read", "search", "execute"}, "Claude Opus 5.5"),
 }
 # No fallback has been smoke-tested for this template. Add at most one per role
 # after the runtime checks, with its verified tier. Do not infer tiers from prices.
 APPROVED_FALLBACKS = {slug: () for slug in ROLES}
+# These are Copilot routing categories, not a ranking of token prices.
+# Verified 2026-10-01:
+# https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing
 MODEL_TIERS = {
-    "GPT-5.6 Luna": 0,  # Lightweight
+    "GPT-6 Luna": 0,  # Lightweight
     "Claude Sonnet 5": 1,  # Versatile
-    "GPT-5.6 Terra": 1,
-    "GPT-5.6 Sol": 2,  # Powerful
+    "GPT-6 Sol": 2,  # Powerful
+    "Claude Opus 5.5": 2,
 }
 SKILLS = {"feature-analysis", "bug-investigation", "run-validation", "code-review"}
 PROMPTS = {"implement-feature", "implement-ticket", "investigate-bug", "review-change"}
@@ -138,7 +141,10 @@ def validate_ticket_context(github):
 
 def validate_links(root):
     paths = [root / "README.md", *sorted((root / ".github").rglob("*.md")),
-             *sorted((root / "docs").rglob("*.md"))]
+             *sorted((root / "docs").rglob("*.md")),
+             *sorted((root / "benchmark").glob("*.md")),
+             *sorted((root / "benchmark/fixture").glob("*.md")),
+             *sorted((root / "benchmark/assessor").glob("*.md"))]
     for path in paths:
         content = path.read_text(encoding="utf-8")
         for target in re.findall(r"\[[^\]]+\]\(([^\s)]+)\)", content):
@@ -286,6 +292,8 @@ def validate(root):
     require(isinstance(settings, dict), "Settings must be a JSON object")
     for key in ("chat.tools.terminal.enableAutoApprove", "chat.subagents.allowInvocationsFromSubagents"):
         require(settings.get(key) is False, f"{key} must remain false for v3")
+    require(settings.get("chat.subagents.showCreditUsage") is True,
+            "chat.subagents.showCreditUsage must be true for benchmark visibility")
 
     validate_ticket_context(github)
     validate_links(root)
@@ -298,5 +306,5 @@ if __name__ == "__main__":
     except (OSError, ValueError, TypeError, yaml.YAMLError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         sys.exit(1)
-    print("PASS: v3 roles, model policy, protocols, external ticket intake, skills, prompts, links, settings, benchmark")
+    print("PASS: v4 model policy; v3 roles/protocols; external ticket intake, skills, prompts, links, settings, benchmark")
     print("Prose effectiveness, model availability and Copilot behavior require VS Code scenarios.")

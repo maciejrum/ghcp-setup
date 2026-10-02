@@ -27,6 +27,14 @@ class ConfigValidationTests(unittest.TestCase):
                 validator.ROOT / directory, self.root / directory,
                 ignore=shutil.ignore_patterns("__pycache__"),
             )
+        for directory in ("benchmark", "outputs"):
+            shutil.copytree(
+                validator.ROOT / directory, self.root / directory,
+                ignore=shutil.ignore_patterns(
+                    "node_modules", ".venv", "__pycache__", ".pytest_cache",
+                    "dist", "test-results", "playwright-report", ".DS_Store",
+                ),
+            )
         shutil.copy2(validator.ROOT / "requirements-dev.txt", self.root / "requirements-dev.txt")
 
     def change_metadata(self, relative, **updates):
@@ -94,7 +102,7 @@ class ConfigValidationTests(unittest.TestCase):
     def test_ticket_prompt_cannot_override_model_or_tools(self):
         relative = ".github/prompts/implement-ticket.prompt.md"
         original = (self.root / relative).read_text(encoding="utf-8")
-        for key, value in (("tools", ["execute"]), ("model", "GPT-5.6 Luna")):
+        for key, value in (("tools", ["execute"]), ("model", "GPT-6 Luna")):
             with self.subTest(key=key):
                 (self.root / relative).write_text(original, encoding="utf-8")
                 self.change_metadata(relative, **{key: value})
@@ -134,24 +142,37 @@ class ConfigValidationTests(unittest.TestCase):
         self.agent("explorer", model="Unknown Model")
         self.invalid("expected primary model")
 
+    def test_each_role_rejects_previous_model_policy(self):
+        previous = {
+            "orchestrator": "GPT-5.6 Sol",
+            "explorer": "GPT-5.6 Luna",
+            "reviewer": "GPT-5.6 Terra",
+            "deep-reviewer": "GPT-5.6 Sol",
+        }
+        for role, old_model in previous.items():
+            with self.subTest(role=role):
+                self.agent(role, model=old_model)
+                self.invalid("expected primary model")
+                self.agent(role, model=validator.ROLES[role][2])
+
     def test_malformed_model_values_rejected(self):
-        for value in (None, 5, [], {}, ["GPT-5.6 Luna", 42]):
+        for value in (None, 5, [], {}, ["GPT-6 Luna", 42]):
             with self.subTest(value=value):
                 self.agent("explorer", model=value)
                 self.invalid("string list|one primary")
 
     def test_single_model_list_supported(self):
-        self.agent("explorer", model=["GPT-5.6 Luna"])
+        self.agent("explorer", model=["GPT-6 Luna"])
         validator.validate(self.root)
 
     def test_unapproved_fallback_rejected(self):
-        self.agent("explorer", model=["GPT-5.6 Luna", "GPT-5.6 Terra"])
+        self.agent("explorer", model=["GPT-6 Luna", "Claude Sonnet 5"])
         self.invalid("fallback has not been approved")
 
     def test_duplicate_and_excessive_fallbacks_rejected(self):
         for value in (
-            ["GPT-5.6 Luna", "GPT-5.6 Luna"],
-            ["GPT-5.6 Luna", "GPT-5.6 Terra", "GPT-5.6 Sol"],
+            ["GPT-6 Luna", "GPT-6 Luna"],
+            ["GPT-6 Luna", "Claude Sonnet 5", "GPT-6 Sol"],
         ):
             with self.subTest(value=value):
                 self.agent("explorer", model=value)
@@ -159,25 +180,38 @@ class ConfigValidationTests(unittest.TestCase):
 
     def test_explicitly_approved_compatible_fallback_supported(self):
         # This test-only policy does not approve a production fallback.
-        self.agent("explorer", model=["GPT-5.6 Luna", "GPT-5.4 mini"])
+        self.agent("explorer", model=["GPT-6 Luna", "GPT-5.4 mini"])
         with patch.dict(validator.APPROVED_FALLBACKS, {"explorer": ("GPT-5.4 mini",)}):
             with patch.dict(validator.MODEL_TIERS, {"GPT-5.4 mini": 0}):
                 validator.validate(self.root)
 
     def test_fallback_requires_known_tier(self):
-        self.agent("explorer", model=["GPT-5.6 Luna", "Untested Tier"])
+        self.agent("explorer", model=["GPT-6 Luna", "Untested Tier"])
         with patch.dict(validator.APPROVED_FALLBACKS, {"explorer": ("Untested Tier",)}):
             self.invalid("unknown model tier")
 
     def test_parent_fallback_must_support_entire_child_chain(self):
-        self.agent("orchestrator", model=["GPT-5.6 Sol", "GPT-5.6 Terra"])
-        with patch.dict(validator.APPROVED_FALLBACKS, {"orchestrator": ("GPT-5.6 Terra",)}):
+        self.agent("orchestrator", model=["Claude Opus 5.5", "Claude Sonnet 5"])
+        with patch.dict(validator.APPROVED_FALLBACKS, {"orchestrator": ("Claude Sonnet 5",)}):
             self.invalid("exceeds a possible parent cost tier")
 
+    def test_powerful_parent_fallback_supports_opus_child(self):
+        # Equal categories permit routing even when their token prices differ.
+        # This fixture does not approve a production fallback or runtime availability.
+        self.agent("orchestrator", model=["Claude Opus 5.5", "GPT-6 Sol"])
+        with patch.dict(validator.APPROVED_FALLBACKS, {"orchestrator": ("GPT-6 Sol",)}):
+            validator.validate(self.root)
+
     def test_implementer_fallback_cannot_match_reviewer(self):
-        self.agent("implementer", model=["Claude Sonnet 5", "GPT-5.6 Terra"])
-        with patch.dict(validator.APPROVED_FALLBACKS, {"implementer": ("GPT-5.6 Terra",)}):
+        self.agent("implementer", model=["Claude Sonnet 5", "GPT-6 Sol"])
+        with patch.dict(validator.APPROVED_FALLBACKS, {"implementer": ("GPT-6 Sol",)}):
             self.invalid("must differ from every possible implementer model")
+
+    def test_implementer_fallback_cannot_match_deep_reviewer(self):
+        self.agent("implementer", model=["Claude Sonnet 5", "Claude Opus 5.5"])
+        with patch.dict(validator.APPROVED_FALLBACKS,
+                        {"implementer": ("Claude Opus 5.5",)}):
+            self.invalid("deep-reviewer: model must differ from every possible implementer model")
 
     def test_nested_delegation_rejected(self):
         self.agent("explorer", agents=["Implementer"])
@@ -212,7 +246,7 @@ class ConfigValidationTests(unittest.TestCase):
     def test_prompt_cannot_override_tools_or_model(self):
         relative = ".github/prompts/implement-feature.prompt.md"
         original = (self.root / relative).read_text(encoding="utf-8")
-        for key, value in (("tools", ["execute"]), ("model", "GPT-5.6 Luna")):
+        for key, value in (("tools", ["execute"]), ("model", "GPT-6 Luna")):
             with self.subTest(key=key):
                 (self.root / relative).write_text(original, encoding="utf-8")
                 self.change_metadata(relative, **{key: value})
@@ -221,8 +255,8 @@ class ConfigValidationTests(unittest.TestCase):
     def test_duplicate_yaml_keys_rejected(self):
         path = self.root / ".github/agents/explorer.agent.md"
         content = path.read_text(encoding="utf-8")
-        path.write_text(content.replace("model: GPT-5.6 Luna",
-                                       "model: GPT-5.6 Luna\nmodel: GPT-5.6 Sol"),
+        path.write_text(content.replace("model: GPT-6 Luna",
+                                       "model: GPT-6 Luna\nmodel: GPT-6 Sol"),
                         encoding="utf-8")
         self.invalid("Duplicate key: model")
 
@@ -274,11 +308,21 @@ class ConfigValidationTests(unittest.TestCase):
                 settings = {
                     "chat.tools.terminal.enableAutoApprove": False,
                     "chat.subagents.allowInvocationsFromSubagents": False,
+                    "chat.subagents.showCreditUsage": True,
                 }
                 settings[key] = True
                 (self.root / ".vscode/settings.json").write_text(
                     json.dumps(settings), encoding="utf-8")
                 self.invalid("must remain false")
+
+    def test_credit_visibility_requires_boolean_true(self):
+        path = self.root / ".vscode/settings.json"
+        settings = json.loads(path.read_text(encoding="utf-8"))
+        for value in (False, "true", 1, None):
+            with self.subTest(value=value):
+                settings["chat.subagents.showCreditUsage"] = value
+                path.write_text(json.dumps(settings), encoding="utf-8")
+                self.invalid("showCreditUsage must be true")
 
     def test_benchmark_row_width_checked(self):
         path = self.root / "docs/benchmark-results.csv"

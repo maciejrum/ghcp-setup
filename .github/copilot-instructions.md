@@ -1,6 +1,6 @@
 # Project architecture
 
-- This repository distributes a GitHub Copilot configuration for a FastAPI backend and a React/Next.js frontend. Application code is not included here.
+- This repository distributes a GitHub Copilot configuration for a FastAPI backend and a React/Next.js frontend. An isolated benchmark application lives in `benchmark/fixture/`; the template maintenance scripts are not application code.
 - In a consuming project, backend and frontend are separate applications. Discover actual paths, dependency versions, and commands from its manifests and documentation.
 - Follow existing architecture and similar implementations before introducing patterns.
 - Prefer minimal changes; never modify unrelated code or overwrite pre-existing user changes.

@@ -1,0 +1,7 @@
+pair,variant,status,execution_order,baseline_ref,resolved_models,credits_before,credits_after,credits_used,credit_evidence,agent_minutes,verified_minutes,human_interventions,approval_prompts,repair_rounds,api_tests,ui_tests,remaining_major_defects,remaining_minor_defects,accepted,quality_architecture,quality_types,quality_errors,quality_tests,quality_scope,quality_total,trace_ref,notes
+1,A,NOT_RUN,,,,,,,,,,,,,,,,,,,,,,,,,
+1,B,NOT_RUN,,,,,,,,,,,,,,,,,,,,,,,,,
+2,A,NOT_RUN,,,,,,,,,,,,,,,,,,,,,,,,,
+2,B,NOT_RUN,,,,,,,,,,,,,,,,,,,,,,,,,
+3,A,NOT_RUN,,,,,,,,,,,,,,,,,,,,,,,,,
+3,B,NOT_RUN,,,,,,,,,,,,,,,,,,,,,,,,,
